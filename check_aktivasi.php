@@ -1,19 +1,30 @@
 <?php
 header("Content-Type: application/json");
 
-$input = json_decode(file_get_contents("php://input"));
+// Ambil JSON input
+$input = json_decode(file_get_contents("php://input"), true);
+$kode = $input["kode_lisensi"] ?? null;
 
-if (!isset($input->kode_lisensi)) {
+// Validasi input
+if (!$kode) {
     echo json_encode(["status" => "gagal", "pesan" => "Kode lisensi tidak ditemukan"]);
     exit;
 }
 
-$kode = $input->kode_lisensi;
-
 try {
-    $pdo = new PDO("mysql:host=localhost;dbname=software_ai", "root", "");
+    // Ambil koneksi database dari environment Railway
+    $host     = getenv("MYSQLHOST");
+    $user     = getenv("MYSQLUSER");
+    $password = getenv("MYSQLPASSWORD");
+    $dbname   = getenv("MYSQLDATABASE");
+    $port     = getenv("MYSQLPORT") ?: 3306;
+
+    // Koneksi ke database
+    $dsn = "mysql:host=$host;port=$port;dbname=$dbname;charset=utf8mb4";
+    $pdo = new PDO($dsn, $user, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
+    // Query lisensi aktif
     $stmt = $pdo->prepare("SELECT * FROM lisensi WHERE kode_lisensi = :kode AND status = 'aktif' LIMIT 1");
     $stmt->execute(['kode' => $kode]);
     $data = $stmt->fetch(PDO::FETCH_ASSOC);
