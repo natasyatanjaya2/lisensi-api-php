@@ -15,11 +15,19 @@ function generateKodeLisensi($panjang = 16) {
 }
 
 try {
+    // Ambil dari environment (Railway akan inject otomatis)
+    $host     = getenv("MYSQLHOST");
+    $dbname   = getenv("MYSQLDATABASE");
+    $user     = getenv("MYSQLUSER");
+    $password = getenv("MYSQLPASSWORD");
+    $port     = getenv("MYSQLPORT") ?: 3306;
+
     // Koneksi ke database
-    $pdo = new PDO("mysql:host=localhost;dbname=software_ai", "root", "");
+    $dsn = "mysql:host=$host;port=$port;dbname=$dbname;charset=utf8mb4";
+    $pdo = new PDO($dsn, $user, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // Loop sampai dapat kode yang unik
+    // Loop sampai dapat kode unik
     do {
         $kode = generateKodeLisensi();
         $cek = $pdo->prepare("SELECT COUNT(*) FROM lisensi WHERE kode_lisensi = ?");
