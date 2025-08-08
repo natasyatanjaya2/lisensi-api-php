@@ -2,6 +2,15 @@
 // aktivasi.php
 header('Content-Type: application/json');
 
+// Fungsi bantu untuk mengirim JSON response & keluar
+function json_response($status, $pesan) {
+    echo json_encode([
+        "status" => $status,
+        "pesan" => $pesan
+    ]);
+    exit;
+}
+
 // Ambil konfigurasi database dari environment Railway
 $host     = getenv("MYSQLHOST");
 $user     = getenv("MYSQLUSER");
@@ -14,25 +23,19 @@ $conn = new mysqli($host, $user, $password, $dbname, $port);
 
 // Cek error koneksi
 if ($conn->connect_error) {
-    echo json_encode([
-        "status" => "gagal",
-        "pesan" => "Koneksi database gagal: " . $conn->connect_error
-    ]);
-    exit;
+    json_response("gagal", "Koneksi database gagal: " . $conn->connect_error);
 }
 
 // Ambil data JSON input
-$data = json_decode(file_get_contents("php://input"), true);
-$kode = $data["kode_lisensi"] ?? null;
+$input = file_get_contents("php://input");
+$data = json_decode($input, true);
 
-// Validasi input
-if (!$kode) {
-    echo json_encode([
-        "status" => "gagal",
-        "pesan" => "Kode lisensi tidak boleh kosong"
-    ]);
-    exit;
+// Validasi parsing JSON
+if (!$data || !isset($data["kode_lisensi"])) {
+    json_response("gagal", "Input JSON tidak valid atau kode lisensi kosong");
 }
+
+$kode = $data["kode_lisensi"];
 
 // Cek apakah lisensi valid & belum aktif
 $stmt = $conn->prepare("SELECT * FROM lisensi WHERE kode_lisensi=? AND status='belum_aktif'");
@@ -46,9 +49,9 @@ if ($row = $result->fetch_assoc()) {
     $stmt2->bind_param("s", $kode);
     $stmt2->execute();
 
-    echo json_encode(["status" => "sukses", "pesan" => "Lisensi berhasil diaktifkan"]);
+    json_response("sukses", "Lisensi berhasil diaktifkan");
 } else {
-    echo json_encode(["status" => "gagal", "pesan" => "Kode lisensi tidak valid atau sudah aktif"]);
+    json_response("gagal", "Kode lisensi tidak valid atau sudah aktif");
 }
 
 $conn->close();
