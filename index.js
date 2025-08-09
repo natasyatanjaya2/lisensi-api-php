@@ -33,7 +33,7 @@ app.post('/aktivasi', (req, res) => {
   });
 });
 
-// 🔹 ENDPOINT: Check status lisensi
+// ENDPOINT: Check status lisensi
 app.post('/check', (req, res) => {
   const kode = req.body.kode_lisensi;
   if (!kode) return res.status(400).json({ status: "gagal", pesan: "Kode lisensi kosong" });
