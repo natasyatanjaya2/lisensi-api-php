@@ -11,10 +11,8 @@
     .card{background:var(--card);border:1px solid #202b4a;border-radius:16px;padding:20px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
     h1{margin:0 0 8px;font-size:24px}
     p.desc{margin:0 0 16px;color:var(--muted)}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    @media (max-width:640px){.row{grid-template-columns:1fr}}
     label{display:block;font-size:14px;color:var(--muted);margin:8px 0 6px}
-    select,input[type="number"],input[type="text"]{
+    select,input[type="text"]{
       width:100%;padding:12px 12px;border-radius:10px;border:1px solid #2a3866;background:#0b1430;color:var(--text);box-sizing:border-box;outline:none
     }
     input[readonly]{opacity:.9}
@@ -28,8 +26,7 @@
     .status.ok{color:var(--ok)} .status.err{color:var(--err)}
     .output{margin-top:16px;background:#0c1534;border:1px dashed #2a3866;border-radius:12px;padding:14px}
     .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
-    .hint{font-size:12px;color:var(--muted)}
-    .grid-3{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px}
+    .grid-2{display:grid;grid-template-columns:2fr 1fr;gap:12px}
     @keyframes pulse{0%{opacity:1}50%{opacity:.4}100%{opacity:1}}
     .loading{animation:pulse 1.2s ease-in-out infinite}
   </style>
@@ -40,22 +37,15 @@
       <h1>Generate Kode Lisensi</h1>
       <p class="desc">Pilih durasi lisensi lalu klik <b>Generate</b>. Server akan membuat kode unik dan menyimpannya ke database.</p>
 
-      <div class="row">
-        <div>
-          <label for="durasiSelect">Durasi Lisensi</label>
-          <select id="durasiSelect">
-            <option value="">Pilih Durasi</option>
-            <option value="1">1 Bulan</option>
-            <option value="3">3 Bulan</option>
-            <option value="6">6 Bulan</option>
-            <option value="12">12 Bulan</option>
-          </select>
-        </div>
-        <div id="customWrap" style="display:none">
-          <label for="durasiCustom">Masukkan durasi (hari)</label>
-          <input id="durasiCustom" type="number" min="1" max="3650" step="1" placeholder="mis. 45" />
-          <div class="hint">Batas wajar: 1–3650 hari</div>
-        </div>
+      <div>
+        <label for="durasiSelect">Durasi Lisensi</label>
+        <select id="durasiSelect">
+          <option value="">Pilih Durasi</option>
+          <option value="1">1 Bulan</option>
+          <option value="3">3 Bulan</option>
+          <option value="6">6 Bulan</option>
+          <option value="12">12 Bulan</option>
+        </select>
       </div>
 
       <div class="actions">
@@ -67,7 +57,7 @@
       <div id="status" class="status"></div>
 
       <div class="output">
-        <div class="grid-3">
+        <div class="grid-2">
           <div>
             <label for="outKode">Kode Lisensi</label>
             <input id="outKode" class="mono" type="text" readonly placeholder="Belum ada kode" />
@@ -76,39 +66,21 @@
             <label for="outDurasi">Durasi (bulan)</label>
             <input id="outDurasi" type="text" readonly placeholder="-" />
           </div>
-          <div>
-            <label for="outExpired">Perkiraan Expired</label>
-            <input id="outExpired" type="text" readonly placeholder="-" />
-          </div>
         </div>
       </div>
     </div>
   </div>
 
   <script>
-    // === KONFIGURASI: ganti sesuai endpoint kamu ===
-    const GENERATE_ENDPOINT = './generate_lisensi.php'; // contoh: '/api/generate_lisensi.php' atau URL penuh
+    const GENERATE_ENDPOINT = './generate_lisensi.php';
 
     const sel = document.getElementById('durasiSelect');
-    const customWrap = document.getElementById('customWrap');
-    const customInput = document.getElementById('durasiCustom');
     const btnGenerate = document.getElementById('btnGenerate');
     const btnCopy = document.getElementById('btnCopy');
     const btnReset = document.getElementById('btnReset');
     const outKode = document.getElementById('outKode');
     const outDurasi = document.getElementById('outDurasi');
-    const outExpired = document.getElementById('outExpired');
     const statusEl = document.getElementById('status');
-
-    // Tampilkan input custom bila dipilih
-    sel.addEventListener('change', () => {
-      if (sel.value === 'custom') {
-        customWrap.style.display = '';
-        customInput.focus();
-      } else {
-        customWrap.style.display = 'none';
-      }
-    });
 
     function uiLoading(isLoading) {
       btnGenerate.disabled = isLoading;
@@ -118,24 +90,11 @@
     }
 
     function getDurasiValue() {
-      if (sel.value === 'custom') {
-        const v = parseInt(customInput.value, 10);
-        if (!Number.isFinite(v) || v < 1 || v > 3650) {
-          throw new Error('Durasi custom harus 1–3650 hari.');
-        }
-        return v;
-      } else {
-        return parseInt(sel.value, 10);
+      const v = parseInt(sel.value, 10);
+      if (!Number.isFinite(v) || v < 1) {
+        throw new Error('Silakan pilih durasi lisensi.');
       }
-    }
-
-    function calcExpired(days) {
-      const d = new Date();
-      d.setDate(d.getDate() + days);
-      const yyyy = d.getFullYear();
-      const mm = String(d.getMonth() + 1).padStart(2, '0');
-      const dd = String(d.getDate()).padStart(2, '0');
-      return `${yyyy}-${mm}-${dd}`;
+      return v;
     }
 
     async function generateKode() {
@@ -162,10 +121,9 @@
           throw new Error(msg);
         }
 
-        // Sukses
-        outKode.value = data.kode_lisensi || '';
-        outDurasi.value = String(data.durasi ?? durasi);
-        outExpired.value = calcExpired(parseInt(outDurasi.value,10));
+        outKode.value   = data.kode_lisensi || '';
+        outDurasi.value = data.durasi ?? durasi;
+
         btnCopy.disabled = !outKode.value;
         statusEl.textContent = 'Kode berhasil dibuat & disimpan di database.';
         statusEl.className = 'status ok';
@@ -173,7 +131,7 @@
         statusEl.textContent = 'Gagal: ' + err.message;
         statusEl.className = 'status err';
         outKode.value = ''; btnCopy.disabled = true;
-        outDurasi.value = ''; outExpired.value = '';
+        outDurasi.value = '';
       } finally {
         uiLoading(false);
       }
@@ -188,7 +146,6 @@
         statusEl.textContent = 'Kode disalin ke clipboard.';
         statusEl.className = 'status ok';
       } catch {
-        // fallback
         outKode.select();
         document.execCommand('copy');
         statusEl.textContent = 'Kode disalin (fallback).';
@@ -197,12 +154,9 @@
     });
 
     btnReset.addEventListener('click', () => {
-      sel.value = '30';
-      customWrap.style.display = 'none';
-      customInput.value = '';
+      sel.value = '';
       outKode.value = '';
       outDurasi.value = '';
-      outExpired.value = '';
       btnCopy.disabled = true;
       statusEl.textContent = '';
       statusEl.className = 'status';
