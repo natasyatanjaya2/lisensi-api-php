@@ -28,9 +28,9 @@ try {
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
     ]);
 
-    // --- Ambil input durasi (hari) ---
-    // Support JSON body atau x-www-form-urlencoded
-    $raw = file_get_contents('php://input');
+    // --- Ambil input durasi (DALAM BULAN) ---
+    // Support JSON body, x-www-form-urlencoded, atau querystring
+    $raw  = file_get_contents('php://input');
     $json = json_decode($raw, true);
     $durasiInput = null;
 
@@ -38,17 +38,17 @@ try {
         $durasiInput = $json['durasi'];
     } elseif (isset($_POST['durasi'])) {
         $durasiInput = $_POST['durasi'];
-    } elseif (isset($_GET['durasi'])) { // opsional: dukung querystring
+    } elseif (isset($_GET['durasi'])) { // opsional
         $durasiInput = $_GET['durasi'];
     }
 
-    // Default 30 hari jika tidak dikirim
-    $durasi = (int) $durasiInput;
-    if ($durasi <= 0) $durasi = 30;
+    // Default ke 1 bulan jika tidak dikirim / tidak valid
+    $durasiBulan = (int) $durasiInput;
+    if ($durasiBulan <= 0) $durasiBulan = 1;
 
-    // Validasi batasan wajar (1 .. 3650 hari)
-    if ($durasi < 1 || $durasi > 3650) {
-        throw new InvalidArgumentException("Durasi harus antara 1 hingga 3650 hari.");
+    // Validasi batasan wajar (1 .. 12 bulan = 1 tahun, ubah sesuai kebutuhan)
+    if ($durasiBulan < 1 || $durasiBulan > 120) {
+        throw new InvalidArgumentException("Durasi harus antara 1 hingga 12 bulan.");
     }
 
     // Loop sampai dapat kode unik
@@ -59,23 +59,24 @@ try {
         $jumlah = (int) $cek->fetchColumn();
     } while ($jumlah > 0);
 
-    // Simpan ke database (status default: belum_aktif, tanggal_aktivasi: NULL)
+    // Simpan ke database
+    // Catatan: kolom 'durasi' sekarang bermakna BULAN.
     $stmt = $pdo->prepare("
         INSERT INTO lisensi (kode_lisensi, status, durasi, tanggal_aktivasi)
         VALUES (?, ?, ?, NULL)
     ");
-    $stmt->execute([$kode, "belum_aktif", $durasi]);
+    $stmt->execute([$kode, "belum_aktif", $durasiBulan]);
 
     echo json_encode([
-        "status" => "sukses",
+        "status"       => "sukses",
         "kode_lisensi" => $kode,
-        "durasi" => $durasi,
-        // "expired_at" baru bisa dihitung setelah aktivasi (tanggal_aktivasi + durasi)
+        "durasi"       => $durasiBulan  // dalam BULAN
     ]);
 } catch (Exception $e) {
     http_response_code(400);
     echo json_encode([
         "status" => "gagal",
-        "pesan" => $e->getMessage()
+        "pesan"  => $e->getMessage()
     ]);
 }
+?>
