@@ -54,7 +54,7 @@ if ($kode === '') {
 
 // --- Cek lisensi aktif ---
 try {
-    $sql = "SELECT id, kode_lisensi, tanggal_aktivasi, status
+    $sql = "SELECT id, kode_lisensi, tanggal_aktivasi, status, durasi
             FROM lisensi
             WHERE kode_lisensi = ? AND status = 'aktif'
             LIMIT 1";
@@ -72,7 +72,8 @@ try {
             'id'               => (int)$row['id'],
             'kode_lisensi'     => $row['kode_lisensi'],
             'tanggal_aktivasi' => $row['tanggal_aktivasi'],
-            'status'           => $row['status']
+            'status'           => $row['status'],
+            'durasi'           => (int)$row['durasi']
         ]
     ]);
 } catch (Throwable $e) {
