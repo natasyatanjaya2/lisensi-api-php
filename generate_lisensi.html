@@ -5,31 +5,133 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Generate Kode Lisensi</title>
   <style>
-    :root { --bg:#0b1020; --card:#121a33; --text:#e8ecff; --muted:#a9b4d6; --accent:#6aa0ff; --ok:#35d07f; --err:#ff6b6b; }
-    html,body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,"Apple Color Emoji","Segoe UI Emoji";margin:0}
-    .container{max-width:780px;margin:40px auto;padding:0 20px}
-    .card{background:var(--card);border:1px solid #202b4a;border-radius:16px;padding:20px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
-    h1{margin:0 0 8px;font-size:24px}
-    p.desc{margin:0 0 16px;color:var(--muted)}
-    label{display:block;font-size:14px;color:var(--muted);margin:8px 0 6px}
-    select,input[type="text"]{
-      width:100%;padding:12px 12px;border-radius:10px;border:1px solid #2a3866;background:#0b1430;color:var(--text);box-sizing:border-box;outline:none
-    }
-    input[readonly]{opacity:.9}
-    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
-    button{
-      padding:12px 16px;border-radius:10px;border:1px solid #2a3866;background:#152451;color:var(--text);cursor:pointer;font-weight:600
-    }
-    button.primary{background:linear-gradient(180deg,#2a5bff,#1b3bb5);border-color:#274fe6}
-    button:disabled{opacity:.6;cursor:not-allowed}
-    .status{margin-top:14px;font-size:14px}
-    .status.ok{color:var(--ok)} .status.err{color:var(--err)}
-    .output{margin-top:16px;background:#0c1534;border:1px dashed #2a3866;border-radius:12px;padding:14px}
-    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
-    .grid-2{display:grid;grid-template-columns:2fr 1fr;gap:12px}
-    @keyframes pulse{0%{opacity:1}50%{opacity:.4}100%{opacity:1}}
-    .loading{animation:pulse 1.2s ease-in-out infinite}
-  </style>
+  :root {
+    --bg: #f5f6fa;        /* latar belakang terang */
+    --card: #ffffff;      /* kartu putih */
+    --text: #1a1a1a;      /* teks utama hitam */
+    --muted: #6b7280;     /* teks redup */
+    --accent: #2563eb;    /* biru aksen */
+    --ok: #16a34a;        /* hijau sukses */
+    --err: #dc2626;       /* merah error */
+  }
+
+  html,body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,"Apple Color Emoji","Segoe UI Emoji";
+    margin: 0;
+  }
+
+  .container {
+    max-width: 780px;
+    margin: 40px auto;
+    padding: 0 20px;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,.05);
+  }
+
+  h1 {
+    margin: 0 0 8px;
+    font-size: 24px;
+  }
+
+  p.desc {
+    margin: 0 0 16px;
+    color: var(--muted);
+  }
+
+  label {
+    display: block;
+    font-size: 14px;
+    color: var(--muted);
+    margin: 8px 0 6px;
+  }
+
+  select, input[type="text"] {
+    width: 100%;
+    padding: 12px 12px;
+    border-radius: 10px;
+    border: 1px solid #d1d5db;
+    background: #ffffff;
+    color: var(--text);
+    box-sizing: border-box;
+    outline: none;
+  }
+
+  input[readonly] {
+    opacity: .9;
+  }
+
+  .actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+  }
+
+  button {
+    padding: 12px 16px;
+    border-radius: 10px;
+    border: 1px solid #d1d5db;
+    background: #e5e7eb;
+    color: var(--text);
+    cursor: pointer;
+    font-weight: 600;
+  }
+
+  button.primary {
+    background: linear-gradient(180deg,#3b82f6,#1d4ed8);
+    color: #fff;
+    border-color: #2563eb;
+  }
+
+  button:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+  }
+
+  .status {
+    margin-top: 14px;
+    font-size: 14px;
+  }
+
+  .status.ok { color: var(--ok) }
+  .status.err { color: var(--err) }
+
+  .output {
+    margin-top: 16px;
+    background: #f9fafb;
+    border: 1px dashed #d1d5db;
+    border-radius: 12px;
+    padding: 14px;
+  }
+
+  .mono {
+    font-family: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+  }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 12px;
+  }
+
+  @keyframes pulse {
+    0% {opacity: 1}
+    50% {opacity: .4}
+    100% {opacity: 1}
+  }
+
+  .loading {
+    animation: pulse 1.2s ease-in-out infinite;
+  }
+</style>
 </head>
 <body>
   <div class="container">
